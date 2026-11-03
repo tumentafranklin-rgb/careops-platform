@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: careops-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: careops
+  template:
+    metadata:
+      labels:
+        app: careops
+    spec:
+      containers:
+        - name: careops-app
+          image: careops-platform:v2
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
