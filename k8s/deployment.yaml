@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: careops-app
-          image: careops-platform:v2
+          image: careops-platform:v3
           imagePullPolicy: Never
           ports:
             - containerPort: 5000
