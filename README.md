@@ -140,3 +140,21 @@ Expected response body:
 ```
 
 Press Ctrl+C in the port-forward terminal when finished.
+
+## Rolling update and rollback exercise
+
+I built and loaded a v3 image, then updated the Deployment to use it.
+After the rollout, both Pods ran v3, and the home endpoint returned
+"version": "v3".
+
+I inspected the Deployment revision history and confirmed that
+revision 8 used v2 with healthy probes and resource settings.
+
+I rolled back to revision 8 and verified that both Pods used v2.
+The home endpoint returned the original response without a version field.
+
+Finally, I reapplied the Deployment file to restore v3.
+
+Lesson: a rollout rollback changes the live cluster, but does not
+change the configuration file stored in Git. Revision numbers belong
+to this cluster's history and may differ when recreating the project.
