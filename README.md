@@ -65,3 +65,78 @@ Expected response body:
 ```bash
 docker logs careops-app
 ```
+## Kubernetes recovery exercise
+
+The application runs with two replicas behind a ClusterIP Service.
+
+I deleted one application Pod to test recovery. Kubernetes created
+a replacement Pod while the other replica stayed running.
+
+The Service automatically updated its endpoints to include the
+replacement Pod and remove the deleted Pod.
+
+Readiness checks control whether a Pod receives Service traffic.
+Liveness checks restart a container after repeated health-check failures.
+
+Both replicas run on one local kind node. This exercise demonstrates
+Pod recovery, but does not provide protection against node failure.
+
+## Run locally with Kubernetes
+
+Prerequisites: Docker, kind, and kubectl installed.
+
+Run these commands from the project folder.
+
+Build the application image:
+
+```bash
+docker build -t careops-platform:v2 .
+```
+
+Create the cluster once:
+
+```bash
+kind create cluster --name careops --config k8s/kind-config.yaml --wait 180s
+```
+
+Load the image into the cluster:
+
+```bash
+kind load docker-image careops-platform:v2 --name careops
+```
+
+Apply the application configuration:
+
+```bash
+kubectl --context kind-careops apply -f k8s/deployment.yaml
+kubectl --context kind-careops apply -f k8s/service.yaml
+```
+
+Wait for the Deployment and inspect its Pods:
+
+```bash
+kubectl --context kind-careops rollout status deployment/careops-app --timeout=120s
+kubectl --context kind-careops get pods -l app=careops
+```
+
+Forward a local port to the application selected by the Service:
+
+```bash
+kubectl --context kind-careops port-forward service/careops-service 8082:80
+```
+
+Leave that terminal running. In another terminal, check health:
+
+```bash
+curl -i http://127.0.0.1:8082/health
+```
+
+Expected HTTP status: 200 OK
+
+Expected response body:
+
+```json
+{"status":"healthy"}
+```
+
+Press Ctrl+C in the port-forward terminal when finished.
