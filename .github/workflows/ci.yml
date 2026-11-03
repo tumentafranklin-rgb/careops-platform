@@ -28,3 +28,17 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t careops-platform:ci .
+
+      - name: Start container
+        run: docker run -d --name careops-ci -p 127.0.0.1:8081:5000 careops-platform:ci
+
+      - name: Check container health
+        run: curl --fail --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:8081/health
+
+      - name: Show container logs
+        if: always()
+        run: docker logs careops-ci
+
+      - name: Clean up container
+        if: always()
+        run: docker rm -f careops-ci
