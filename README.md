@@ -615,3 +615,62 @@ terraform -chdir=terraform/local plan
 - The local Terraform exercise does not configure the application.
 - AWS infrastructure and deployment are planned.
 - This is a learning project, not a production healthcare system.
+
+## AWS container registry exercise
+
+Terraform configuration in terraform/aws manages a private Amazon ECR
+repository named careops-platform in us-east-1.
+
+Repository settings:
+
+- Immutable image tags
+- AES256 encryption at rest
+- Project, Environment, and ManagedBy tags
+
+I authenticated Docker to ECR and uploaded the v3 application image.
+I verified its tag, digest, and stored size using aws ecr describe-images.
+
+The image is stored in AWS. The application is not running in AWS yet.
+
+### Terraform commands
+
+```bash
+terraform -chdir=terraform/aws init
+terraform -chdir=terraform/aws validate
+terraform -chdir=terraform/aws plan
+terraform -chdir=terraform/aws apply
+```
+
+Review the plan before approving apply.
+
+Display the repository address:
+
+```bash
+terraform -chdir=terraform/aws output -raw repository_url
+```
+
+### Troubleshooting completed
+
+An AWS request initially failed because the VM's system clock was behind.
+I corrected the clock using Chrony and verified AWS authentication.
+
+Repository creation initially failed because the CLI user lacked ECR
+permissions. I attached a customer-managed policy scoped to the project
+repository, with a separate ECR authentication permission.
+
+The repository was created successfully, and a later Terraform plan
+reported no changes.
+
+### Cost and cleanup
+
+Stored images can incur ECR storage charges.
+A $10 budget alert is configured; it does not automatically stop spending.
+
+Before destroying the repository, remove its images or explicitly review
+a change allowing Terraform to delete a nonempty repository.
+
+Keep Terraform state available so Terraform can manage and remove
+the resources it created.
+
+- Private Amazon ECR repository managed with Terraform
+- Application image uploaded to ECR and verified
