@@ -674,3 +674,37 @@ the resources it created.
 
 - Private Amazon ECR repository managed with Terraform
 - Application image uploaded to ECR and verified
+
+## Completed AWS EC2 deployment and cleanup
+
+I deployed the v3 image from private Amazon ECR to an Amazon Linux
+t3.micro EC2 instance using Terraform.
+
+The deployment included:
+
+- An encrypted 8 GB gp3 root disk
+- A security group allowing application access from my public IP only
+- An EC2 IAM role with repository-scoped ECR pull permissions
+- Systems Manager access without an inbound SSH rule
+- A startup script that installed Docker and launched the application
+
+I checked startup progress through Systems Manager and cloud-init logs.
+Both the health endpoint and the v3 home response returned HTTP 200
+from my local machine.
+
+After testing, I renamed compute.tf, iam.tf, network.tf, and security.tf
+to end in .tf.disabled, then reviewed and applied the cleanup plan.
+
+Terraform destroyed the eight EC2 deployment resources.
+I verified that the instance was terminated and its root disk was removed.
+A subsequent Terraform plan reported no changes.
+
+The deployment code remains as .tf.disabled files for reference.
+Terraform does not load these files. Restoring their .tf extensions
+will propose recreating the deployment and incur charges if applied.
+The allowed public IP must be checked before redeployment.
+
+The private ECR repository and v3 image remain.
+ECR storage can continue to incur charges.
+
+- AWS EC2 deployment from private ECR, verified and cleaned up
